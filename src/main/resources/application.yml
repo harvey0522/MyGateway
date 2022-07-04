@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: mygateway
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 1000
+        response-timeout: 2s
+      default-filters:
+        #- DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_UNIQUE
+      routes:
+      #myclient
+      - id: myclient-test
+        uri: lb://myclient
+        predicates:
+        - Path=/c1/**
+       #myclient
+      - id: myFeignClient-test
+        uri: lb://myfeignClient
+        filters:
+          - AddRequestHeader=myheader, iiikkkkk
+          - name: RequestSize
+            args:
+              maxSize: 1
+          #- name: Hystrix
+          #  args:
+          #    name: fallbackcmd
+          #    fallbackUri: forward:/myfallback
+        predicates:
+        - Path=/f1/**
+        #- Method=GET
+        - Query=id
+logging:
+  level:
+    root: info
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8080/eureka/
+
+server:
+  port: 8070
+
+management:
+  #server:
+    #port: 8011
+  endpoints:
+     web:
+       exposure:
+          include: '*'
+test:
+  param: test003
